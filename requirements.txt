@@ -1,0 +1,9 @@
+streamlit
+phidata
+pgvector
+pypdf
+psycopg[binary]
+openai
+sqlalchemy 
+psycopg
+rapidocr-onnxruntime

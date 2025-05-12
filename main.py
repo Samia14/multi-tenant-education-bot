@@ -1,0 +1,161 @@
+"""File that will run on local machine for testing."""
+import streamlit as st
+import random
+from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode, LatexGroupNode, LatexSpecialsNode, LatexMacroNode, LatexEnvironmentNode
+import time
+from assistent import agent_response_call
+import os,tempfile
+st.title('Educational ChatBot')
+st.write("Your Personal Tutor for STEM subjects of (BISE Lahore) Pakistan")
+def clean_latex(text):
+    return (
+        text.replace('⍺rac', r'\frac')  # Fix mis-encoded '\frac'
+            .replace('ext{', r'\text{')  # Fix mis-encoded '\text{'
+            .replace('ext(', r'\text(')
+            .replace('\\,', r'\,')       # Ensure proper spacing command
+    )
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
+# uploaded_files= st.file_uploader(label='Upload files on which you want to train your tutor',accept_multiple_files=True,type=['pdf'])
+# if uploaded_files is not None:
+#     for uploaded_file in uploaded_files:
+#         tmp_dir = tempfile.mkdtemp()
+#         file_path = os.path.join(tmp_dir, uploaded_file.name)
+#         with open(uploaded_file.name, "wb") as f:
+#             f.write(uploaded_file.getbuffer())
+
+# Display chat messages from history on app rerun
+with st.sidebar:
+    subject = st.selectbox(
+        "Choose your Subject",
+        ("Physics", "Chemistry", "Computer","Biology")
+    )
+    grade = st.selectbox(
+        "Choose your grade",
+        ("9th", "10th", "11th","12th")
+    )
+
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Accept user input
+if prompt := st.chat_input("Enter your text here."):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    
+
+
+
+    
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        agent =agent_response_call()
+        assistant_response= agent.run(prompt,stream=True)
+        for chunk in assistant_response:
+            if chunk:
+                full_response+=chunk.content
+    
+        
+      
+        def contains_latex(latex_text: str) -> bool:
+            latex_context = get_default_latex_context_db()
+            walker = LatexWalker(latex_text, latex_context=latex_context)
+            walker = LatexWalker(latex_text, latex_context=latex_context)
+            nodes, _, _ = walker.get_latex_nodes()
+
+            for node in nodes:
+         
+               
+                if not isinstance(node, LatexCharsNode):
+                    if node.latex_verbatim().startswith(r"\(") and node.latex_verbatim().endswith(r"\)"):
+                        # st.markdown(node.latex_verbatim(), unsafe_allow_html=True)
+                        st.markdown(node.latex_verbatim()[0:2], unsafe_allow_html=True)
+                        st.latex(node.latex_verbatim()[2:len(node.latex_verbatim())-2])
+                        st.markdown(node.latex_verbatim()[len(node.latex_verbatim())-2:len(node.latex_verbatim())], unsafe_allow_html=True)
+
+                    elif node.latex_verbatim().startswith(r"\[") and node.latex_verbatim().endswith(r"\]"):
+                        
+                        # st.markdown(node.latex_verbatim()[0:2], unsafe_allow_html=True)
+                        st.latex(node.latex_verbatim()[2:len(node.latex_verbatim())-2])
+                        # st.markdown(node.latex_verbatim()[len(node.latex_verbatim())-2:len(node.latex_verbatim())], unsafe_allow_html=True)
+                    
+                        
+                    else:
+                        st.latex(node.latex_verbatim())
+                    
+                else:
+                    st.markdown(node.latex_verbatim())
+            
+
+        # Example text input
+        sas = r"Hi May name is Samia. This is \textbf{Bold text} and this is \textit{italic text}"  # Try changing this to plain text
+   
+        # Detection and rendering
+        contains_latex(full_response)
+  
+
+
+     #    Combined regex pattern for LaTeX
+        # parts = re.split(r'(\\\[.*?\\\])|', full_response, flags=re.DOTALL)
+     
+    # Split content, keeping the delimiters (captured groups)
+    
+
+        
+    #     r"""
+    #     # Match LaTeX environments (e.g., equation, align)
+    #     \\begin\{.*?\}.*?\\end\{.*?\}  
+    #     |
+    #     # Match display math blocks: $$...$$ or $...$
+    #     (\$\$.*?\$\$|\\$.*?\\$)       
+    #     |
+    #     # Match inline math: $...$ or $...$
+    #     (\$.*?\$|\\$.*?\\$)            
+    #     |
+    #     # Match standalone LaTeX commands with arguments (e.g., \frac{}{}, \text{})
+    #     (\$a-zA-Z]+\*?\s*\{[^{}]*\}(?:\{[^{}]*\})*)  
+    #     |
+    #     # Match simple LaTeX commands (e.g., \times, \approx)
+    #     (\\[a-zA-Z]+\*?)                              
+    # """
+
+        # for part in parts:
+        # # Check if the part is a display math block
+        #     if part.startswith('\[') and part.endswith('\]'):
+        #         # Extract the LaTeX code by removing \[ and \] and any surrounding whitespace
+        #         latex_code = part[2:-2].strip()
+        #         st.latex(latex_code)
+        #     else:
+        #         # Render text (which may include inline math) with st.markdown
+        #         st.markdown(part)
+
+#         # Split the text into LaTeX and non-LaTeX parts
+        # result = []
+        # last_pos = 0
+        # for match in re.finditer(pattern, full_response, flags=re.DOTALL):
+        #     if last_pos < match.start():
+        #         result.append(('text', full_response[last_pos:match.start()]))
+        #     result.append(('latex', match.group(0)))
+        #     last_pos = match.end()
+        # if last_pos < len(full_response):
+        #     result.append(('text', full_response[last_pos:]))
+
+        # for chunk_type, chunk in result:
+        #     if chunk_type == 'latex':
+        #         st.latex(clean_latex(chunk.strip()))
+        #     else:
+        #         st.markdown(chunk)            
+
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+
