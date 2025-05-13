@@ -1,10 +1,12 @@
 """File that will run on local machine for testing."""
 import streamlit as st
 import random
+from io import StringIO
 from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode, LatexGroupNode, LatexSpecialsNode, LatexMacroNode, LatexEnvironmentNode
 import time
 from assistent import agent_response_call
 import os,tempfile
+output = StringIO()
 st.title('Educational ChatBot')
 st.write("Your Personal Tutor for STEM subjects of (BISE Lahore) Pakistan")
 def clean_latex(text):
@@ -73,32 +75,25 @@ if prompt := st.chat_input("Enter your text here."):
             nodes, _, _ = walker.get_latex_nodes()
 
             for node in nodes:
-         
-               
                 if not isinstance(node, LatexCharsNode):
-                    if node.latex_verbatim().startswith(r"\(") and node.latex_verbatim().endswith(r"\)"):
-                        # st.markdown(node.latex_verbatim(), unsafe_allow_html=True)
-                        st.markdown(node.latex_verbatim()[0:2], unsafe_allow_html=True)
-                        st.latex(node.latex_verbatim()[2:len(node.latex_verbatim())-2])
-                        st.markdown(node.latex_verbatim()[len(node.latex_verbatim())-2:len(node.latex_verbatim())], unsafe_allow_html=True)
-
-                    elif node.latex_verbatim().startswith(r"\[") and node.latex_verbatim().endswith(r"\]"):
-                        
-                        # st.markdown(node.latex_verbatim()[0:2], unsafe_allow_html=True)
-                        st.latex(node.latex_verbatim()[2:len(node.latex_verbatim())-2])
-                        # st.markdown(node.latex_verbatim()[len(node.latex_verbatim())-2:len(node.latex_verbatim())], unsafe_allow_html=True)
-                    
-                        
+                    latex_content = node.latex_verbatim()
+                    if latex_content.startswith(r"\(") and latex_content.endswith(r"\)"):
+                        # For inline math, use single $ directly (no backslashes)
+                        output.write(f"${latex_content[2:-2]}$")  
+                    elif latex_content.startswith(r"\[") and latex_content.endswith(r"\]"):
+                        # For display math, use double $$ with newlines
+                        output.write(f"$$\n{latex_content[2:-2]}\n$$")  
                     else:
-                        st.latex(node.latex_verbatim())
-                    
+                        # For other LaTeX, use display math
+                        output.write(f"$$\n{latex_content}\n$$")  
                 else:
-                    st.markdown(node.latex_verbatim())
-            
+                    # Escape any dollar signs in the text that aren't part of math
+                    text = node.latex_verbatim().replace('$', r'\$')
+                    output.write(text)
 
-        # Example text input
-        sas = r"Hi May name is Samia. This is \textbf{Bold text} and this is \textit{italic text}"  # Try changing this to plain text
-   
+            # Render everything at once as markdown
+            st.markdown(output.getvalue())
+                 
         # Detection and rendering
         contains_latex(full_response)
   
