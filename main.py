@@ -4,18 +4,27 @@ import random
 from io import StringIO
 from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode, LatexGroupNode, LatexSpecialsNode, LatexMacroNode, LatexEnvironmentNode
 import time
+from pathlib import Path
 from assistent import agent_response_call
 import os,tempfile
 output = StringIO()
 st.title('Educational ChatBot')
 st.write("Your Personal Tutor for STEM subjects of (BISE Lahore) Pakistan")
-def clean_latex(text):
-    return (
-        text.replace('⍺rac', r'\frac')  # Fix mis-encoded '\frac'
-            .replace('ext{', r'\text{')  # Fix mis-encoded '\text{'
-            .replace('ext(', r'\text(')
-            .replace('\\,', r'\,')       # Ensure proper spacing command
-    )
+def image_extraction_regex(text:str):
+        """extract image form the code."""
+        import re
+        image_str = r'C:\Users\mysel\Pictures\Screenshots\Physics\test'
+        image_folder =Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\test')
+        matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
+        
+        if len(matches)>0:
+            for image in matches:
+                for file in image_folder.iterdir():
+                    if file.is_file() :
+                       
+                        if file.name.lower().replace(' ','')==image.lower().replace(' ','')+'.png':
+                            image_path = image_str+"\\"+file.name
+                            st.image(image_path)
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -90,66 +99,17 @@ if prompt := st.chat_input("Enter your text here."):
                     # Escape any dollar signs in the text that aren't part of math
                     text = node.latex_verbatim().replace('$', r'\$')
                     output.write(text)
-
+            return output
             # Render everything at once as markdown
-            st.markdown(output.getvalue())
-                 
+           
+        # print("fdklj jfl kjf",full_response)      
         # Detection and rendering
-        contains_latex(full_response)
-  
+        mix_response = contains_latex(full_response)
+        message_placeholder.markdown(mix_response.getvalue())
 
-
-     #    Combined regex pattern for LaTeX
-        # parts = re.split(r'(\\\[.*?\\\])|', full_response, flags=re.DOTALL)
-     
-    # Split content, keeping the delimiters (captured groups)
-    
-
-        
-    #     r"""
-    #     # Match LaTeX environments (e.g., equation, align)
-    #     \\begin\{.*?\}.*?\\end\{.*?\}  
-    #     |
-    #     # Match display math blocks: $$...$$ or $...$
-    #     (\$\$.*?\$\$|\\$.*?\\$)       
-    #     |
-    #     # Match inline math: $...$ or $...$
-    #     (\$.*?\$|\\$.*?\\$)            
-    #     |
-    #     # Match standalone LaTeX commands with arguments (e.g., \frac{}{}, \text{})
-    #     (\$a-zA-Z]+\*?\s*\{[^{}]*\}(?:\{[^{}]*\})*)  
-    #     |
-    #     # Match simple LaTeX commands (e.g., \times, \approx)
-    #     (\\[a-zA-Z]+\*?)                              
-    # """
-
-        # for part in parts:
-        # # Check if the part is a display math block
-        #     if part.startswith('\[') and part.endswith('\]'):
-        #         # Extract the LaTeX code by removing \[ and \] and any surrounding whitespace
-        #         latex_code = part[2:-2].strip()
-        #         st.latex(latex_code)
-        #     else:
-        #         # Render text (which may include inline math) with st.markdown
-        #         st.markdown(part)
-
-#         # Split the text into LaTeX and non-LaTeX parts
-        # result = []
-        # last_pos = 0
-        # for match in re.finditer(pattern, full_response, flags=re.DOTALL):
-        #     if last_pos < match.start():
-        #         result.append(('text', full_response[last_pos:match.start()]))
-        #     result.append(('latex', match.group(0)))
-        #     last_pos = match.end()
-        # if last_pos < len(full_response):
-        #     result.append(('text', full_response[last_pos:]))
-
-        # for chunk_type, chunk in result:
-        #     if chunk_type == 'latex':
-        #         st.latex(clean_latex(chunk.strip()))
-        #     else:
-        #         st.markdown(chunk)            
-
+        image_extraction_regex(full_response)
+        # st.image("C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\Book9_1\\Figure 1.9.png")
+   
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": full_response})
 
