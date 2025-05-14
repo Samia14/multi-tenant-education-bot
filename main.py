@@ -5,7 +5,7 @@ from io import StringIO
 from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode, LatexGroupNode, LatexSpecialsNode, LatexMacroNode, LatexEnvironmentNode
 import time
 from pathlib import Path
-from assistent import agent_response_call
+from assistent import agent_response_call_physics,agent_response_call_computer,agent_response_call_chemistry
 import os,tempfile
 output = StringIO()
 st.title('Educational ChatBot')
@@ -64,12 +64,21 @@ if prompt := st.chat_input("Enter your text here."):
 
 
 
-    
+        
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
-        agent =agent_response_call()
+        agent=None
+        if subject=='Physics':
+
+            agent =agent_response_call_physics()
+        elif subject =='Chemistry':
+            agent =agent_response_call_chemistry()
+        else:
+            agent =agent_response_call_computer()
+
+
         assistant_response= agent.run(prompt,stream=True)
         for chunk in assistant_response:
             if chunk:
