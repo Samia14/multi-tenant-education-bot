@@ -1,0 +1,43 @@
+The third equation of motion can be derived from the concepts of speed-time graphs and the relationship between distance, speed, and acceleration. Here is the derivation:
+
+1. **Understanding the Speed-Time Graph**:
+   - When a body moves with uniform acceleration, its speed-time graph is a straight line (AB in the graph). The slope of this line represents the acceleration (a) of the body.
+   - Let the initial velocity be \( u \), the final velocity be \( v \), the acceleration be \( a \), and the time be \( t \).
+
+2. **Area under the Speed-Time Graph**:
+   - The total distance \( S \) travelled by the body is given by the area under the speed-time graph.
+   - This area can be divided into a rectangle and a triangle:
+     - Area of rectangle (OACD) = \( u \times t \)
+     - Area of triangle (ABC) = \( \frac{1}{2} \times (v - u) \times t \)
+
+3. **Total Area Calculation**:
+   - The total distance \( S \) is therefore:
+     \[
+     S = ut + \frac{1}{2}(v - u)t
+     \]
+
+4. **Rearranging for the Distance**:
+   - This simplifies to:
+     \[
+     S = ut + \frac{1}{2}vt - \frac{1}{2}ut
+     \]
+   - Combining terms yields:
+     \[
+     S = \frac{1}{2}(u + v)t
+     \]
+
+5. **Final Rearrangement**:
+   - From the first equation of motion, we also know:
+     \[
+     v = u + at
+     \]
+   - Rearranging gives us:
+     \[
+     t = \frac{v - u}{a}
+     \]
+   - Substituting this \( t \) into the distance formula leads to the third equation of motion:
+     \[
+     v^2 = u^2 + 2aS
+     \]
+
+This is the derivation of the third equation of motion. For reference, this derivation can be found in **Physics_9, Chapter 2.6, page 46**.

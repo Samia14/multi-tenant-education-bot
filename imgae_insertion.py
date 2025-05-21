@@ -1,6 +1,50 @@
 """Store and retrive images from postgress."""
 import psycopg2
 from pathlib import Path
+
+
+import fitz  # PyMuPDF
+import io
+from PIL import Image
+
+
+file = "C:\\Education Project Data\\Chemistry\\Chemistry.pdf"
+
+# open the file
+pdf_file = fitz.open(file)
+
+# STEP 3
+# iterate over PDF pages
+for page_index in range(len(pdf_file)):
+
+    # get the page itself
+    page = pdf_file.load_page(page_index)  # load the page
+    image_list = page.get_images(full=True)  # get images on the page
+
+    # printing number of images found in this page
+    if image_list:
+        print(f"[+] Found a total of {len(image_list)} images on page {page_index}")
+    else:
+        print("[!] No images found on page", page_index)
+    
+    for image_index, img in enumerate(image_list, start=1):
+        # get the XREF of the image
+        xref = img[0]
+
+        # extract the image bytes
+        base_image = pdf_file.extract_image(xref)
+        image_bytes = base_image["image"]
+
+        # get the image extension
+        image_ext = base_image["ext"]
+
+        # save the image
+        image_name = f"image{page_index+1}_{image_index}.{image_ext}"
+        with open(image_name, "wb") as image_file:
+            image_file.write(image_bytes)
+            print(f"[+] Image saved as {image_name}")
+
+
 def store_images_in_podtgress(path:str)->None:
     """Store images along in postgress db."""
 
@@ -27,5 +71,62 @@ def store_images_in_podtgress(path:str)->None:
     conn.close()
     print("Image inserted successfully.")
 
+from pathlib import Path
+def image_extraction_regex(text:str):
+        """extract image form the code."""
+        import re
+        image_str = r'C:\Users\mysel\Pictures\Screenshots\Physics\test'
+        image_folder =Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\test')
+        matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
+        
+        if len(matches)>0:
+            for image in matches:
+                for file in image_folder.iterdir():
+                    if file.is_file() :
+                       
+                        if file.name.lower().replace(' ','')==image.lower().replace(' ','')+'.png':
+                            image_path = image_str+"\\"+file.name
+                            print(image_path)
+
+
+
+
 # Example usage
-store_images_in_podtgress("C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\Book9_2")
+# store_images_in_podtgress("C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\Book9_2")
+# image_extraction_regex("""### Working of Screw Gauge
+
+# A **screw gauge**, also known as a micrometer screw gauge, is a precision instrument used to measure small lengths with greater accuracy than a Vernier caliper. Here’s how it works, along with an illustration.
+
+# #### Components of a Screw Gauge
+# 1. **U-shaped Metal Frame:** Holds the other components.
+# 2. **Stud:** A metal stud is fixed at one end of the frame.
+# 3. **Hollow Cylinder (Sleeve):** It has a millimeter scale marked on it and acts as a nut.
+# 4. **Thimble:** Contains a threaded spindle that moves as the thimble rotates.
+# 5. **Circular Scale:** Divided into 100 parts, for finer measurement.
+
+# ![Figure 1.9: A micrometer screw gauge](https://example.com/screw_gauge_image.png)
+
+# - As the thimble completes one full rotation, the spindle moves 1 mm along the index line, and each division on the circular scale corresponds to 0.01 mm.
+
+# #### Steps to Use a Screw Gauge
+# 1. **Zero Error Determination:**
+#    - Close the gap between the stud and spindle.
+#    - Check if the zero of the circular scale aligns with the index line. If not, calculate the zero error.
+
+# 2. **Measurement Procedure:**
+#    - Open the gap using the ratchet and place the object (e.g., wire) between the stud and spindle.
+#    - Gently turn the ratchet until the object is firmly held.
+#    - Read the main scale and circular scale to find the diameter of the object.
+#    - Apply any zero error correction to obtain the accurate measurement.
+
+# #### Example Calculation
+# If the main scale reading is 1 mm and the circular scale reading (85 divisions) is noted:
+# - Circular scale reading = 85 × 0.01 mm = 0.85 mm
+# - Observed diameter = Main scale reading + Circular scale reading = 1 mm + 0.85 mm = 1.85 mm
+# - Apply zero correction if any, to finalize the measurement.
+
+# ### Conclusion
+# The least count of a screw gauge is 0.01 mm, making it more precise than other measurements tools like the Vernier calipers. Measurements taken with a screw gauge are crucial in experimental physics due to their accuracy.
+
+# #### Sources
+# - Chapter: Physical Quantities and Measurement, Pages 13-15.""")
