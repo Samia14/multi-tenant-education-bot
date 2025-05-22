@@ -56,14 +56,16 @@ def initailize_session(subject:str,grade:str=None):
         st.session_state.pop("messages",None)
     else:
         st.session_state["last_subject"]=subject
+        # print("session state:",st.session_state)
     rag_assistent:Agent
     if  st.session_state.get("rag_assistant") == None:
         rag_assistent = subject_selection(subject)
         st.session_state["rag_assistant"] = rag_assistent
+        # print("-------------------",rag_assistent)
     else:
         rag_assistent = st.session_state["rag_assistant"]
     try:
-        st.session_state["rag_assistant_run_id"] = rag_assistent.create_run()
+        st.session_state["rag_assistant_run_id"] = rag_assistent.run_id
     except Exception:
         st.warning("Could not create the Assistant! Please check if database is running ? ")
         return st.session_state, None
@@ -146,8 +148,8 @@ if "theme" not in st.session_state:
 # Sidebar theme selector
 theme = st.sidebar.selectbox(
     "Select Theme",
-    ["light", "dark", "system"],
-    index=["light", "dark", "system"].index(st.session_state.theme),
+    ["light", "dark"],
+    index=["light", "dark"].index(st.session_state.theme),
     key="theme_selector"
 )
 
@@ -169,7 +171,7 @@ if theme:
         st.session_state.theme = theme
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.markdown(message["content"],unsafe_allow_html=True)
 if 'processed_output' not in st.session_state:
     st.session_state.processed_output = ""
 # Accept user input

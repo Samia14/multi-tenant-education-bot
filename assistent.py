@@ -1,7 +1,15 @@
 """Information regarding all asistents and agents."""
 from phi.agent import Agent
 from phi.model.openai import OpenAIChat
+from phi.knowledge.pdf import PDFKnowledgeBase
+from phi.document.chunking.agentic import AgenticChunking
+from phi.document.reader.pdf import PDFReader
+from config import POSTGRES_URL,OPENAI_EMBEDDING_MODEL_NAME,BOOK_PATH,PHYSICS_BOOK,CHEMISTRY_BOOK,COMPUTER_BOOK
+from phi.vectordb.pgvector import PgVector
+import os
+from phi.embedder.openai import OpenAIEmbedder
 from phi.storage.agent.postgres import PgAgentStorage
+
 from config import POSTGRES_URL,OPENAI_KEY,OPENAI_MODEL_NAME
 
 
@@ -67,13 +75,33 @@ def agent_response_call_computer()->Agent:
 
     )
 def agent_response_call_physics()->Agent: 
+    # physic_agent = Agent(
+    #     role="Find answers for questions related to physics, numericals, concept, concepts with images, exmaples and problems.",
+    #     name="Physics Expert of 9th grade of BISE Lahore.",
+    #     knowledge_base=
+    # )
+    pdf_path = BOOK_PATH+PHYSICS_BOOK
+    reader = PDFReader(chunking_strategy=AgenticChunking())
+    knowledge_base = PDFKnowledgeBase(
+        reader=reader,
+        path=pdf_path,
+  
+         num_documents=10,
+        # Store embeddings in the `ai.recipes` table
+        vector_db=PgVector(table_name="physics", db_url=POSTGRES_URL,  embedder=OpenAIEmbedder(api_key=os.getenv("OPENAI_API_KEY"),model=OPENAI_EMBEDDING_MODEL_NAME)),
+    )
+    
     return Agent(
         model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
-      storage=PgAgentStorage(table_name="llm_default",db_url=POSTGRES_URL),
+        storage=PgAgentStorage(table_name="llm_default",db_url=POSTGRES_URL),
         # Enable RAG by adding references from AgentKnowledge to the user prompt.
         add_context=True,
+        knowledge_base=knowledge_base,
+        # team=[physic_agent],
         # Set as False because Agents default to `search_knowledge=True`
         search_knowledge=True,
+        
+        read_chat_history=True,
         markdown=True,
         prevent_hallucinations=True,
         debug_mode=True,
