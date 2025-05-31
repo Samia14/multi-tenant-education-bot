@@ -2,8 +2,9 @@
 import streamlit as st
 import random
 from phi.agent import Agent
+
 from io import StringIO
-from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode, LatexGroupNode, LatexSpecialsNode, LatexMacroNode, LatexEnvironmentNode
+from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode
 import time
 from pathlib import Path
 
@@ -54,9 +55,9 @@ def initailize_session(subject:str,grade:str=None):
         st.session_state.pop("rag_assistant",None)
         st.session_state.pop("rag_assistant_run_id",None)
         st.session_state.pop("messages",None)
-    else:
+    # else:
         st.session_state["last_subject"]=subject
-        # print("session state:",st.session_state)
+        print("session state:",st.session_state)
     rag_assistent:Agent
     if  st.session_state.get("rag_assistant") == None:
         rag_assistent = subject_selection(subject)
@@ -80,10 +81,12 @@ def clear_cache():
         del st.session_state['rag_assistant']
     rag_assistant:Agent = subject_selection(subject)
     if st.session_state.get('rag_assistant_run_id'):
-        del st.session_state['rag_assistant']
+        del st.session_state['rag_assistant_run_id']
     st.session_state["rag_assistant"] =rag_assistant
     try:
-        st.session_state["rag_assistant_run_id"] =rag_assistant.create_run()
+        st.session_state["rag_assistant_run_id"] = rag_assistant.run_id
+        if "messages" not in st.session_state:
+            st.session_state.messages=[]
     except Exception :
         st.warning("Could not create the Agent, please try again !")
 
@@ -111,36 +114,25 @@ def contains_latex(latex_text: str) -> bool:
                         output.write(text)
                 return output
 
-
-
-st.title('Educational ChatBot')
-st.divider()
-st.write("Your Personal Tutor for STEM subjects of (BISE Lahore) Pakistan")
-# Initialize chat histor
-
-# if "messages" not in st.session_state:
-#     st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
-
-
         
-
+grade = st.sidebar.selectbox(
+    "Choose your grade",
+    ("9th")
+)
 
 subject = st.sidebar.selectbox(
     "Choose your Subject",
-    ("Physics", "Chemistry", "Computer","Biology")
-)
-grade = st.sidebar.selectbox(
-    "Choose your grade",
-    ("9th", "10th", "11th","12th")
+    ("Physics", "Chemistry", "Computer")
 )
 
-font_size = st.sidebar.slider(
-    "Font Size", 
-    min_value=12, 
-    max_value=24, 
-    value=16,
-    key="font_size_slider"
-)
+
+# font_size = st.sidebar.slider(
+#     "Font Size", 
+#     min_value=12, 
+#     max_value=24, 
+#     value=16,
+#     key="font_size_slider"
+# )
 # Initialize session state for theme if it doesn't exist
 if "theme" not in st.session_state:
     st.session_state.theme = "light"
@@ -152,7 +144,9 @@ theme = st.sidebar.selectbox(
     index=["light", "dark"].index(st.session_state.theme),
     key="theme_selector"
 )
-
+st.title(f'Class {grade} {subject} Helper')
+st.divider()
+st.write("Your Personal Tutor for STEM subjects of (BISE Lahore) Pakistan")
 # Apply theme if it changed
 if theme != st.session_state.theme:
     st.session_state.theme = theme
@@ -162,50 +156,50 @@ st.session_state,rag_assistant = initailize_session(subject)
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
-if st.sidebar.button('Clear Previous Context',on_click=clear_cache):
-        if "messages" not in st.session_state:
+if st.sidebar.button('Start New Chat ',on_click=clear_cache):
+        if "messages" in st.session_state:
+            # st.session_state,rag_assistant = initailize_session(subject)
             st.session_state.messages=[]
-            st.success("Cache cleared successfully!")
+            st.success("Cleared Chat successfully!")
 # Apply theme
 if theme:
         st.session_state.theme = theme
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"],unsafe_allow_html=True)
-if 'processed_output' not in st.session_state:
-    st.session_state.processed_output = ""
+        processed_msg = message.get("processed_content", message["content"])
+        st.markdown(processed_msg,unsafe_allow_html=True)
+
 # Accept user input
 if prompt := st.chat_input("Enter your question here."):
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    # Display user message in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    
-
-
-
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
         
-    # Display assistant response in chat message container
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
-        try:
-            assistant_response= rag_assistant.run(prompt,stream=True)
-            for chunk in assistant_response:
-                if chunk:
-                    full_response+=chunk.content  
-            # Detection and rendering
-            mix_response = contains_latex(full_response)
+        with st.spinner("Thinking...", show_time=True):
+        # Display assistant response in chat message container
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                full_response = ""
+                try:
+                    assistant_response= rag_assistant.run(prompt,stream=True)
+                    for chunk in assistant_response:
+                        if chunk:
+                            full_response+=chunk.content  
+                    # Detection and rendering
+              
+                    mix_response = contains_latex(full_response)
+                except Exception as E:
+                    print("Error in running agent",E)
+                    st.error("No Internet! Check your internet connection and try again. ")
+            
             message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
-        
-            message_placeholder.session_state.processed_output = mix_response.getvalue()
-
+            # message_placeholder.session_state.processed_output = mix_response.getvalue()
+    
+          
             image_extraction_regex(full_response)
 
              # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
-        except Exception as E:
-            print("Error in running agent",E)
-            st.error("No Internet! Check your internet connection and try again. ")
-        
+            st.session_state.messages.append({"role": "assistant", "content": full_response,'processed_content':mix_response.getvalue()})
+       

@@ -3,46 +3,132 @@ import psycopg2
 from pathlib import Path
 
 
-import fitz  # PyMuPDF
-import io
+from pdf2image import convert_from_path
+import pytesseract
 from PIL import Image
+import os
+
+# Convert PDF to images
+pdf_path = r"C:\Education Project Data\Chemistry\Chemistry.pdf"
+images = convert_from_path(pdf_path)
+
+# Extract text from each page
+for i, image in enumerate(images):
+    # Save image temporarily (optional)
+    image.save(f"C:\\Users\\mysel\\project\\EducationBot\\chemistry\\page_{i}.png", "PNG")
+    # Perform OCR
+    text = pytesseract.image_to_string(Image.open(f"C:\\Users\\mysel\\project\\EducationBot\\chemistry\\page_{i}.png"))
+    print(f"Page {i+1} text:\n{text}\n")
+    # Optionally, save text to a file
+    with open(f"C:\\Users\\mysel\\project\\EducationBot\\chemistry\\page_{i}.txt", "w") as text_file:
+        text_file.write(text)
+    # Clean up temporary image
+    os.remove(f"C:\\Users\\mysel\\project\\EducationBot\\chemistry\\page_{i}.png")
 
 
-file = "C:\\Education Project Data\\Chemistry\\Chemistry.pdf"
 
-# open the file
-pdf_file = fitz.open(file)
 
-# STEP 3
-# iterate over PDF pages
-for page_index in range(len(pdf_file)):
 
-    # get the page itself
-    page = pdf_file.load_page(page_index)  # load the page
-    image_list = page.get_images(full=True)  # get images on the page
 
-    # printing number of images found in this page
-    if image_list:
-        print(f"[+] Found a total of {len(image_list)} images on page {page_index}")
-    else:
-        print("[!] No images found on page", page_index)
+
+
+
+
+
+
+
+
+# from spire.pdf.common import *
+# from spire.pdf import *
+
+# # Create a PdfDocument object
+# doc = PdfDocument()
+
+# # Load a PDF document
+# doc.LoadFromFile(r"C:\Users\mysel\project\Physics\Book9\Physics_9_Modified.pdf")
+
+# # Get a specific page
+# page = doc.Pages[6]
+
+# # Create a PdfTextExtractor object
+# textExtractor = PdfTextExtractor(page)
+
+# # Create a PdfTextExtractOptions object
+# extractOptions = PdfTextExtractOptions()
+
+# # Set IsExtractAllText to Ture
+# extractOptions.IsExtractAllText = True
+
+# # Extract text from the page keeping white spaces
+# text = textExtractor.ExtractText(extractOptions)
+
+# # Write text to a txt file 
+# with open('TextOfPageSix.txt', 'w') as file:
+#     lines = text.split("\n")
+#     for line in lines:
+#         if line != '':
+#             file.write(line)
+# doc.Close()
+# from spire.pdf import PdfDocument, PdfImageHelper
+
+# # Create a PdfDocument instance
+# pdf = PdfDocument()
+
+# # Load a PDF file
+# pdf.LoadFromFile("C:/Users/mysel/project/Chemistry/Chemistry.pdf")
+
+# # Create a PdfImageHelper instance
+# imageHelper = PdfImageHelper()
+
+# # Iterate through the pages in the document
+# for i in range(0, pdf.Pages.Count):
+#     # Get the current page
+#     page = pdf.Pages.get_Item(i)
+#     # Get the image information of the page
+#     imageInfo = imageHelper.GetImagesInfo(page)
+#     # Iterate through the image information items
+#     for j in range(0, len(imageInfo)):
+#         # Save the current image to file
+#         imageInfo[j].Image.Save(f"C:\\Users\\mysel\\project\\EducationBot\\Image{i}_{j}.png")
+
+# # Release resources
+# pdf.Close()
+
+# file = 
+
+# # open the file
+# pdf_file = fitz.open(file)
+
+# # STEP 3
+# # iterate over PDF pages
+# for page_index in range(len(pdf_file)):
+
+#     # get the page itself
+#     page = pdf_file.load_page(page_index)  # load the page
+#     image_list = page.get_images(full=True)  # get images on the page
+
+#     # printing number of images found in this page
+#     if image_list:
+#         print(f"[+] Found a total of {len(image_list)} images on page {page_index}")
+#     else:
+#         print("[!] No images found on page", page_index)
     
-    for image_index, img in enumerate(image_list, start=1):
-        # get the XREF of the image
-        xref = img[0]
+#     for image_index, img in enumerate(image_list, start=1):
+#         # get the XREF of the image
+#         xref = img[0]
 
-        # extract the image bytes
-        base_image = pdf_file.extract_image(xref)
-        image_bytes = base_image["image"]
+#         # extract the image bytes
+#         base_image = pdf_file.extract_image(xref)
+#         image_bytes = base_image["image"]
 
-        # get the image extension
-        image_ext = base_image["ext"]
+#         # get the image extension
+#         image_ext = base_image["ext"]
 
-        # save the image
-        image_name = f"image{page_index+1}_{image_index}.{image_ext}"
-        with open(image_name, "wb") as image_file:
-            image_file.write(image_bytes)
-            print(f"[+] Image saved as {image_name}")
+#         # save the image
+#         image_name = f"image{page_index+1}_{image_index}.{image_ext}"
+#         with open(image_name, "wb") as image_file:
+#             image_file.write(image_bytes)
+#             print(f"[+] Image saved as {image_name}")
 
 
 def store_images_in_podtgress(path:str)->None:

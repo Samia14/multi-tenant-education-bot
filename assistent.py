@@ -32,7 +32,7 @@ def agent_response_call_chemistry()->Agent:
                       'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
                       'Always mention the source information from where you get the data like chaper number and page number.',
                       'answer only from the material given in the book.',
-                      "Do not add any image link reference from any source just provide information from the data source like fig 1.2 nothing more ",
+                      "Do not add any image link reference from any source just provide information from the data source like figure 1.2 nothing more ",
                       "While answering questions, make sure to answer only that question, with the answer containing only relevant data.Do not mix up similar information with different context.",
                       "When the user`s question contains a numeric reference (e.g., 'Explain topic 2.5' or 'What does example 4 cover?'), identify the source from the book that matches that number. If it is example it will be like Example 6.5, If it is topic it will be like : 6.5 abc and use it to construct your answer",
                       'If the user asked for summary make the response easy to understand based on the selected data from knowledge base no additional search '],
@@ -62,9 +62,9 @@ def agent_response_call_computer()->Agent:
                       'If the user`s question is unclear and does not make any sense with the previous data then ask for clarification.',
                       'You are only limited to the data provided to you.',
                       'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
-                      'Always mention the source information from where you get the data like chaper number and page number.',
+                      'Always mention the source information from where you get the data like chaper number.',
                       'answer only from the material given in the book.',
-                      "Do not add any image link reference from any source just provide information from the data source like fig 1.2 nothing more ",
+                      "Do not add any image link reference from any source just provide information from the data source like figure 1.2 nothing more. Dont render images like :![Figure 3.10: Rocket](Figure 3.10),just simply mention figure 3.10. ",
                       "While answering questions, make sure to answer only that question, with the answer containing only relevant data.Do not mix up similar information with different context.",
                       "When the user`s question contains a numeric reference (e.g., 'Explain topic 2.5' or 'What does example 4 cover?'), identify the source from the book that matches that number. If it is example it will be like Example 6.5, If it is topic it will be like : 6.5 abc and use it to construct your answer",
                       'If the user asked for summary make the response easy to understand based on the selected data from knowledge base no additional search '],
@@ -80,13 +80,13 @@ def agent_response_call_physics()->Agent:
     #     name="Physics Expert of 9th grade of BISE Lahore.",
     #     knowledge_base=
     # )
+    
     pdf_path = BOOK_PATH+PHYSICS_BOOK
     reader = PDFReader(chunking_strategy=AgenticChunking())
     knowledge_base = PDFKnowledgeBase(
         reader=reader,
         path=pdf_path,
-  
-         num_documents=10,
+        num_documents=10,
         # Store embeddings in the `ai.recipes` table
         vector_db=PgVector(table_name="physics", db_url=POSTGRES_URL,  embedder=OpenAIEmbedder(api_key=os.getenv("OPENAI_API_KEY"),model=OPENAI_EMBEDDING_MODEL_NAME)),
     )
@@ -94,6 +94,9 @@ def agent_response_call_physics()->Agent:
     return Agent(
         model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
         storage=PgAgentStorage(table_name="llm_default",db_url=POSTGRES_URL),
+          guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base.'],
+        description='You are  conversational based expert in Physics for 9th grade chatbot . Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.',
+
         # Enable RAG by adding references from AgentKnowledge to the user prompt.
         add_context=True,
         knowledge_base=knowledge_base,
@@ -105,21 +108,23 @@ def agent_response_call_physics()->Agent:
         markdown=True,
         prevent_hallucinations=True,
         debug_mode=True,
-        instructions=['If you do not find any relavant information, avoid fabricating response.',
-                      'Give data based on the selected chunk from the knowledge base.',
-                      ' If you could not find any answer just simply apologize .',
+        instructions=['If you do not find any relavant information, avoid fabricating response.If you could not find any answer just simply apologize .',
+                      
                       'If the user`s question is unclear and does not make any sense with the previous data then ask for clarification.',
-                      'You are only limited to the data provided to you.',
+                      'Always respond based on the knwoledgebase provided to you',
                       'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
-                      'Always mention the source information from where you get the data like chaper number and page number.',
-                      'answer only from the material given in the book.',
-                      "Do not add any image link reference from any source just provide information from the data source like fig 1.2 nothing more ",
-                      "While answering questions, make sure to answer only that question, with the answer containing only relevant data.Do not mix up similar information with different context.",
+                      'Always mention the source information from where you get the data like chapter number.',
+                        ' No mixed math & text inside $...$ and avoid  extra spaces inside  $ E = mc^2 $ instead use it like $E = mc^2$  ',
+                        'Use $...$ (preferred) or \(...\),(_) must be inside math mode. Outside, escape them (\_).',
+                        ' No mixed math & text inside $...$ and unclossed double $$',
+                        'If a user question is related to creating table, use html instead of markdown',
+                      'Always create correct katex expression for mathematical expressions,symbols and formulas. That are easy to distinguish between markdown and katex',
+                      "Do not add any image link reference from any source just provide information from the data source like Figure 1.2 nothing more ",
+                      "While answering questions, make sure to answer only that question Do not mix up similar information with different context.",
+                      'All examples are referred as EXAMPLE 1.2 where 1 refers as chapter 1.So, select all chunks from chapter 1 only.',
                       "When the user`s question contains a numeric reference (e.g., 'Explain topic 2.5' or 'What does example 4 cover?'), identify the source from the book that matches that number. If it is example it will be like Example 6.5, If it is topic it will be like : 6.5 abc and use it to construct your answer",
-                      'If the user asked for summary make the response easy to understand based on the selected data from knowledge base no additional search '],
-        guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base.'],
-        description='You are expert in Physics for 9th grade . Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.'
-
+                      'create summaries or steps for different topics to make it more easy to understaqnd or rephrase them without lossing the context of the data .'],
+      
     )
 
 
