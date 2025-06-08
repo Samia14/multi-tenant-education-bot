@@ -74,6 +74,9 @@ def agent_response_call_computer()->Agent:
         description='You are expert in Computer for 9th grade. Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.'
 
     )
+
+from phi.tools.youtube_tools import YouTubeTools
+
 def agent_response_call_physics()->Agent: 
     # physic_agent = Agent(
     #     role="Find answers for questions related to physics, numericals, concept, concepts with images, exmaples and problems.",
@@ -91,19 +94,37 @@ def agent_response_call_physics()->Agent:
         # Store embeddings in the `ai.recipes` table
         vector_db=PgVector(table_name="physics", db_url=POSTGRES_URL,  embedder=OpenAIEmbedder(api_key=os.getenv("OPENAI_API_KEY"),model=OPENAI_EMBEDDING_MODEL_NAME)),
     )
-    
+    study_guide = Agent(
+    name="Study planner",  # Fixed typo in name
+    model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
+    tools=[YouTubeTools()],
+    markdown=True,
+    description="You are a study partner who assists users in finding resources, answering questions, and providing explanations on various topics.",
+    instructions=[
+      
+        "Break down complex topics into digestible chunks and provide step-by-step explanations with practical examples.",
+        "Share curated learning resources including documentation, tutorials, articles, research papers, and community discussions.",
+        "Recommend high-quality YouTube videos and online courses that match the user's learning style and proficiency level.",
+        "Suggest hands-on projects and exercises to reinforce learning, ranging from beginner to advanced difficulty.",
+        "Create personalized study plans with clear milestones, deadlines, and progress tracking.",
+        "Provide tips for effective learning techniques, time management, and maintaining motivation.",
+        "Recommend relevant communities, forums, and study groups for peer learning and networking.",
+    ],
+)
     return Agent(
         model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
         storage=PgAgentStorage(table_name="llm_default",db_url=POSTGRES_URL),
-          guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base.'],
-        description='You are  conversational based expert in Physics for 9th grade chatbot . Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.',
-
+          guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base. You have team named `Study planner`, assign the task related to planning your study to that team member.  '],
+        description='You are  conversational based expert in Physics for 9th grade chatbot . Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.You have team named `Study planner`, assign the task related to planning your study to that team member.',
+        team= [study_guide],
         # Enable RAG by adding references from AgentKnowledge to the user prompt.
         add_context=True,
         knowledge_base=knowledge_base,
+        add_chat_history_to_messages=True,
         # team=[physic_agent],
         # Set as False because Agents default to `search_knowledge=True`
         search_knowledge=True,
+        num_history_responses=3,
         
         read_chat_history=True,
         markdown=True,

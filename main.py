@@ -53,7 +53,7 @@ def initailize_session(subject:str,grade:str=None):
     """Initialize the chat history based on the subject and grade selected."""
     if "last_subject" in st.session_state and st.session_state["last_subject"]!=subject:
         st.session_state.pop("rag_assistant",None)
-        st.session_state.pop("rag_assistant_run_id",None)
+        st.session_state.pop("rag_assistant_agent_id",None)
         st.session_state.pop("messages",None)
     # else:
         st.session_state["last_subject"]=subject
@@ -66,7 +66,7 @@ def initailize_session(subject:str,grade:str=None):
     else:
         rag_assistent = st.session_state["rag_assistant"]
     try:
-        st.session_state["rag_assistant_run_id"] = rag_assistent.run_id
+        st.session_state["rag_assistant_agent_id"] = rag_assistent.agent_id
     except Exception:
         st.warning("Could not create the Assistant! Please check if database is running ? ")
         return st.session_state, None
@@ -80,11 +80,11 @@ def clear_cache():
     if st.session_state.get('rag_assistant'):
         del st.session_state['rag_assistant']
     rag_assistant:Agent = subject_selection(subject)
-    if st.session_state.get('rag_assistant_run_id'):
-        del st.session_state['rag_assistant_run_id']
+    if st.session_state.get('rag_assistant_agent_id'):
+        del st.session_state['rag_assistant_agent_id']
     st.session_state["rag_assistant"] =rag_assistant
     try:
-        st.session_state["rag_assistant_run_id"] = rag_assistant.run_id
+        st.session_state["rag_assistant_agent_id"] = rag_assistant.agent_id
         if "messages" not in st.session_state:
             st.session_state.messages=[]
     except Exception :
@@ -201,7 +201,7 @@ if prompt := st.chat_input("Enter your question here."):
             message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
             # message_placeholder.session_state.processed_output = mix_response.getvalue()
     
-          
+            
             image_extraction_regex(full_response)
 
              # Add assistant response to chat history
