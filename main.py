@@ -99,17 +99,20 @@ def contains_latex(latex_text: str) -> bool:
                 for node in nodes:
                     if not isinstance(node, LatexCharsNode):
                         latex_content = node.latex_verbatim()
-                        if latex_content.startswith(r"\(") and latex_content.endswith(r"\)"):
+                        if latex_content.strip().startswith(r"\(") and latex_content.strip().endswith(r"\)"):
                             # For inline math, use single $ directly (no backslashes)
-                            output.write(f"${latex_content[2:-2]}$")  
+                            inner = latex_content.strip()[2:-2].strip()  # Remove \(...\) and strip spaces inside
+                            output.write(f"${inner}$") 
                         elif latex_content.startswith(r"\[") and latex_content.endswith(r"\]"):
+                            inner = latex_content.strip()[2:-2].strip()
                             # For display math, use double $$ with newlines
-                            output.write(f"$$\n{latex_content[2:-2]}\n$$")  
+                            output.write(f"\n$${inner}$$\n")  
                         else:
                             # For other LaTeX, use display math
-                            output.write(f"$$\n{latex_content}\n$$")  
+                            output.write(f"$${latex_content}$$")  
                     else:
                         # Escape any dollar signs in the text that aren't part of math
+                        
                         text = node.latex_verbatim().replace('$', r'\$')
                         output.write(text)
                 return output
@@ -183,11 +186,12 @@ if prompt := st.chat_input("Enter your question here."):
                 message_placeholder = st.empty()
                 full_response = ""
                 try:
+            
                     assistant_response= rag_assistant.run(prompt,stream=True)
                     for chunk in assistant_response:
                         if chunk:
                             full_response+=chunk.content  
-                    # Detection and rendering
+                
               
                     mix_response = contains_latex(full_response)
                 except Exception as E:

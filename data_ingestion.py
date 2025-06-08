@@ -9,7 +9,7 @@ from phi.embedder.openai import OpenAIEmbedder
 
 def load_pd_files_physics():
     """read any pdf file provided by the user."""
-    pdf_path = BOOK_PATH+PHYSICS_BOOK
+    pdf_path = BOOK_PATH+'\\Physics\\Book9\\Modified and Extracted Chp\\Modified_Chp\\Physics9_2.pdf'
     pdf_reader = PDFReader(chunking_strategy=AgenticChunking())
     knowledge_base = PDFKnowledgeBase(
         reader=pdf_reader,

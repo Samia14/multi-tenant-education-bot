@@ -81,10 +81,11 @@ def agent_response_call_physics()->Agent:
     #     knowledge_base=
     # )
     
-    pdf_path = BOOK_PATH+PHYSICS_BOOK
+    pdf_path = BOOK_PATH+'\\Physics\\Book9\\Modified and Extracted Chp\\Modified_Chp\\Physics9_2.pdf'
     reader = PDFReader(chunking_strategy=AgenticChunking())
     knowledge_base = PDFKnowledgeBase(
         reader=reader,
+        chunking_strategy=AgenticChunking(),
         path=pdf_path,
         num_documents=10,
         # Store embeddings in the `ai.recipes` table
@@ -114,11 +115,9 @@ def agent_response_call_physics()->Agent:
                       'Always respond based on the knwoledgebase provided to you',
                       'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
                       'Always mention the source information from where you get the data like chapter number.',
-                        ' No mixed math & text inside $...$ and avoid  extra spaces inside  $ E = mc^2 $ instead use it like $E = mc^2$  ',
-                        'Use $...$ (preferred) or \(...\),(_) must be inside math mode. Outside, escape them (\_).',
-                        ' No mixed math & text inside $...$ and unclossed double $$',
+                        "Generate the expression using proper KaTeX/LaTeX that works inside Streamlit's st.markdown() with unsafe_allow_html=True or directly as string Follow these rules strictly",
                         'If a user question is related to creating table, use html instead of markdown',
-                      'Always create correct katex expression for mathematical expressions,symbols and formulas. That are easy to distinguish between markdown and katex',
+
                       "Do not add any image link reference from any source just provide information from the data source like Figure 1.2 nothing more ",
                       "While answering questions, make sure to answer only that question Do not mix up similar information with different context.",
                       'All examples are referred as EXAMPLE 1.2 where 1 refers as chapter 1.So, select all chunks from chapter 1 only.',
