@@ -114,7 +114,7 @@ def agent_response_call_physics()->Agent:
     return Agent(
         model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
         storage=PgAgentStorage(table_name="llm_default",db_url=POSTGRES_URL),
-          guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base. You have team named `Study planner`, assign the task related to planning your study to that team member.  '],
+          guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base. You have team named `Study planner`, assign the task related to planning your study to that team member. If user asked any question other than greeting,simpling apolozie.Always avoid questions that are not techncial apart from greetings. '],
         description='You are  conversational based expert in Physics for 9th grade chatbot . Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.You have team named `Study planner`, assign the task related to planning your study to that team member.',
         team= [study_guide],
         # Enable RAG by adding references from AgentKnowledge to the user prompt.
@@ -130,20 +130,20 @@ def agent_response_call_physics()->Agent:
         markdown=True,
         prevent_hallucinations=True,
         debug_mode=True,
-        instructions=['If you do not find any relavant information, avoid fabricating response.If you could not find any answer just simply apologize .',
-                      
-                      'If the user`s question is unclear and does not make any sense with the previous data then ask for clarification.',
-                      'Always respond based on the knwoledgebase provided to you',
-                      'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
-                      'Always mention the source information from where you get the data like chapter number.',
-                        "Generate the expression using proper KaTeX/LaTeX that works inside Streamlit's st.markdown() with unsafe_allow_html=True or directly as string Follow these rules strictly",
-                        'If a user question is related to creating table, use html instead of markdown',
-
-                      "Do not add any image link reference from any source just provide information from the data source like Figure 1.2 nothing more ",
-                      "While answering questions, make sure to answer only that question Do not mix up similar information with different context.",
-                      'All examples are referred as EXAMPLE 1.2 where 1 refers as chapter 1.So, select all chunks from chapter 1 only.',
-                      "When the user`s question contains a numeric reference (e.g., 'Explain topic 2.5' or 'What does example 4 cover?'), identify the source from the book that matches that number. If it is example it will be like Example 6.5, If it is topic it will be like : 6.5 abc and use it to construct your answer",
-                      'create summaries or steps for different topics to make it more easy to understaqnd or rephrase them without lossing the context of the data .'],
+        instructions=["IMPORTANT:No need to answer questions like how to cheat, regarding teachers or anything ethically or non ethically. Simply refuse to answer."
+            'To answer any technical information always use knowledge base as a reference.Avoid  answering questions from your own knowledge.',
+            'If you do not find any relavant information, avoid fabricating response.If you could not find any answer just simply apologize .',
+            'If the user`s question is unclear and does not make any sense with the previous data then ask for clarification.',
+            'Always respond based on the knwoledgebase provided to you',
+            'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
+            'Always mention the source information from where you get the data like chapter number.',
+            "Generate the expression using proper KaTeX/LaTeX that works inside Streamlit's st.markdown() with unsafe_allow_html=True or directly as string Follow these rules strictly",
+            'If a user question is related to creating table, use html instead of markdown',
+            "Do not add any image link reference from any source just provide information from the data source like Figure 1.2 nothing more ",
+            "While answering questions, make sure to answer only that question Do not mix up similar information with different context.",
+            'All examples are referred as EXAMPLE 1.2 where 1 refers as chapter 1.So, select all chunks from chapter 1 only.',
+            "When the user`s question contains a numeric reference (e.g., 'Explain topic 2.5' or 'What does example 4 cover?'), identify the source from the book that matches that number. If it is example it will be like Example 6.5, If it is topic it will be like : 6.5 abc and use it to construct your answer",
+            'create summaries or steps for different topics to make it more easy to understaqnd or rephrase them without lossing the context of the data .'],
       
     )
 

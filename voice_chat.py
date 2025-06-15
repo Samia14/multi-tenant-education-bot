@@ -91,41 +91,8 @@ def clear_cache():
     except Exception :
         st.warning("Could not create the Agent, please try again !")
 
-def contains_latex(latex_text: str) -> bool:
-                latex_context = get_default_latex_context_db()
-                walker = LatexWalker(latex_text, latex_context=latex_context)
-                walker = LatexWalker(latex_text, latex_context=latex_context)
-                nodes, _, _ = walker.get_latex_nodes()
 
-                for node in nodes:
-                    if not isinstance(node, LatexCharsNode):
-                        latex_content = node.latex_verbatim()
-                        if latex_content.strip().startswith(r"\(") and latex_content.strip().endswith(r"\)"):
-                            # For inline math, use single $ directly (no backslashes)
-                            inner = latex_content.strip()[2:-2].strip()  # Remove \(...\) and strip spaces inside
-                            output.write(f"${inner}$") 
-                        elif latex_content.startswith(r"\[") and latex_content.endswith(r"\]"):
-                            inner = latex_content.strip()[2:-2].strip()
-                            # For display math, use double $$ with newlines
-                            output.write(f"\n$${inner}$$\n")  
-                        else:
-                            # For other LaTeX, use display math
-                            output.write(f"$${latex_content}$$")  
-                    else:
-                        # Escape any dollar signs in the text that aren't part of math
-                        
-                        text = node.latex_verbatim().replace('$', r'\$')
-                        output.write(text)
-                return output
 
-# def page2():
-#     st.title("Second page")
-
-# pg = st.navigation([
-#     st.Page("page1.py", title="First page", icon="🔥"),
-#     st.Page(page2, title="Second page", icon=":material/favorite:"),
-# ])
-# pg.run()    
 st.sidebar.title("**Learning Platform**")
 
 grade = st.sidebar.selectbox(
@@ -138,14 +105,6 @@ subject = st.sidebar.selectbox(
     ("Physics", "Chemistry", "Computer")
 )
 
-
-# font_size = st.sidebar.slider(
-#     "Font Size", 
-#     min_value=12, 
-#     max_value=24, 
-#     value=16,
-#     key="font_size_slider"
-# )
 # Initialize session state for theme if it doesn't exist
 if "theme" not in st.session_state:
     st.session_state.theme = "light"
@@ -229,10 +188,9 @@ if prompt!=None:
 
     with st.chat_message("user"):
         st.markdown(prompt)
-     
 
     with st.spinner("Thinking...  "):
-        st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
+        # st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
     # Display assistant response in chat message container
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
@@ -243,36 +201,22 @@ if prompt!=None:
                 for chunk in assistant_response:
                     if chunk:
                         full_response+=chunk.content  
-                mix_response = contains_latex(full_response)
+                # mix_response = contains_latex(full_response)
             except Exception as E:
                 print("Error in running agent",E)
                 st.error("No Internet! Check your internet connection and try again. ")
-            # tts = gTTS(text=full_response, lang='en')  
-            # audio_buffer = BytesIO()
-            # tts.write_to_fp(audio_buffer)
-            # audio_buffer.seek(0)  
-            # st.audio(data=audio_buffer, format="audio/mp3")
-            message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
+            tts = gTTS(text=full_response, lang='en')  
+            audio_buffer = BytesIO()
+            tts.write_to_fp(audio_buffer)
+            audio_buffer.seek(0)  
+            st.audio(data=audio_buffer, format="audio/mp3")
+            # message_placeholder.markdown(full_response,unsafe_allow_html=True)
             # message_placeholder.session_state.processed_output = mix_response.getvalue()
-            if 'inertia' or 'law of inertia' or 'first law of motion' or '1st law of motion' or 'newtons first law of motion' in prompt:
-
-                left_padding_ratio = 0.2
-                video_column_ratio = 0.2
-                right_padding_ratio = 0.2
-
-
-                _ , video_col, _ = st.columns([left_padding_ratio, video_column_ratio, right_padding_ratio])
-                video_file = open(r"C:\Users\mysel\Downloads\Coin in Cup_ The Law of Inertia.mp4", "rb")
-                video_bytes = video_file.read()
-                    
-                with video_col:
-                    st.video(video_bytes)
 
 
             image_extraction_regex(full_response)
-            st.session_state['question']=''
             #     # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": full_response,'processed_content':mix_response.getvalue()})
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 
 
