@@ -90,22 +90,16 @@ def agent_response_call_physics()->Agent:
         reader=reader,
         chunking_strategy=AgenticChunking(),
         path=pdf_path,
-        num_documents=10,
+        num_documents=3,
         # Store embeddings in the `ai.recipes` table
         vector_db=PgVector(table_name="physics", db_url=POSTGRES_URL,  embedder=OpenAIEmbedder(api_key=os.getenv("OPENAI_API_KEY"),model=OPENAI_EMBEDDING_MODEL_NAME)),
     )
     study_guide = Agent(
     name="Study planner",  # Fixed typo in name
     model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
-    tools=[YouTubeTools()],
     markdown=True,
-    description="You are a study partner who assists users in finding resources, answering questions, and providing explanations on various topics.",
+    description="You are a study partner who assists users in planning the given topic under limited time.",
     instructions=[
-      
-        "Break down complex topics into digestible chunks and provide step-by-step explanations with practical examples.",
-        "Share curated learning resources including documentation, tutorials, articles, research papers, and community discussions.",
-        "Recommend high-quality YouTube videos and online courses that match the user's learning style and proficiency level.",
-        "Suggest hands-on projects and exercises to reinforce learning, ranging from beginner to advanced difficulty.",
         "Create personalized study plans with clear milestones, deadlines, and progress tracking.",
         "Provide tips for effective learning techniques, time management, and maintaining motivation.",
         "Recommend relevant communities, forums, and study groups for peer learning and networking.",
@@ -130,17 +124,20 @@ def agent_response_call_physics()->Agent:
         markdown=True,
         prevent_hallucinations=True,
         debug_mode=True,
-        instructions=["IMPORTANT:No need to answer questions like how to cheat, regarding teachers or anything ethically or non ethically. Simply refuse to answer."
-            'To answer any technical information always use knowledge base as a reference.Avoid  answering questions from your own knowledge.',
-            'If you do not find any relavant information, avoid fabricating response.If you could not find any answer just simply apologize .',
+        instructions=["IMPORTANT:No need to answer questions like how to cheat, regarding teachers or anything ethically or non ethically. Simply refuse to answer.Avoid sharing your team member details."
+            'To answer any technical information always use knowledge base as a reference.',
+            'If you do not find any relavant information, Always avoid fabricating response and just simply apologize .',
+            
             'If the user`s question is unclear and does not make any sense with the previous data then ask for clarification.',
             'Always respond based on the knwoledgebase provided to you',
-            'if the response have reference to the image or figure, always add images or figures to help in better explanation.',
-            'Always mention the source information from where you get the data like chapter number.',
+            'if the response from the knowledge base have reference to the image or figure / video always add them in the response',
+            'Always mention the source information from where you get the data like chapter number and  be concise and correct.',
             "Generate the expression using proper KaTeX/LaTeX that works inside Streamlit's st.markdown() with unsafe_allow_html=True or directly as string Follow these rules strictly",
-            'If a user question is related to creating table, use html instead of markdown',
-            "Do not add any image link reference from any source just provide information from the data source like Figure 1.2 nothing more ",
-            "While answering questions, make sure to answer only that question Do not mix up similar information with different context.",
+            # 'If a user question is related to creating table, use html instead of markdown',
+            'When user ask about video/figrue referring to a topic, look for the Figure or Video reference present in the revalent chunk of text.',
+            'If user ask information related to video or image, always refer to the knowledge_base and return it from the .',
+            "Do not add any image or video link reference from any source just provide information from the knowledge base with the relavent chunk like Figure 1.2 for image and Video 1.2 nothing more ",
+            "While answering questions, make sure to answer only that question .Avoid mix up similar information with different context.",
             'All examples are referred as EXAMPLE 1.2 where 1 refers as chapter 1.So, select all chunks from chapter 1 only.',
             "When the user`s question contains a numeric reference (e.g., 'Explain topic 2.5' or 'What does example 4 cover?'), identify the source from the book that matches that number. If it is example it will be like Example 6.5, If it is topic it will be like : 6.5 abc and use it to construct your answer",
             'create summaries or steps for different topics to make it more easy to understaqnd or rephrase them without lossing the context of the data .'],

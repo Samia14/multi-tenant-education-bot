@@ -29,18 +29,40 @@ def image_extraction_regex(text:str):
         """extract image form the code."""
         import re
         image_str = r'C:\Users\mysel\Pictures\Screenshots\Physics\test'
+        video_fodler_string ='C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\videos'
+        video_folder_path = Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\videos')
         image_folder =Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\test')
-        matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
-        
-        if len(matches)>0:
-            for image in matches:
+        image_matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
+        video_matches = re.findall(r'\b[vV]ideo\s+\d+(?:\.\d+)?\b',text)
+        print("dh djkfjkf",video_matches)
+        if len(image_matches)>0:
+            for image in image_matches:
                 for file in image_folder.iterdir():
                     if file.is_file() :
                        
                         if file.name.lower().replace(' ','')==image.lower().replace(' ','')+'.png':
                             image_path = image_str+"\\"+file.name
                             st.image(image_path)
+        if len(video_matches)>0:
+            for video in video_matches:
+                for file in video_folder_path.iterdir():
+                    
+                    if file.is_file() :
+                       
+                        if file.name.lower().replace(' ','')==video.lower().replace(' ','')+'.mp4':
+                            
+                            left_padding_ratio = 0.2
+                            video_column_ratio = 0.2
+                            right_padding_ratio = 0.2
 
+
+                            # _ , video_col, _ = st.columns([left_padding_ratio, video_column_ratio, right_padding_ratio])
+                            video_file = open(f"{video_fodler_string}\{file.name}", "rb")
+                            video_bytes = video_file.read()
+                                
+                            
+                            st.video(video_bytes)
+                           
 def subject_selection(subject:str):
     if subject=='Physics':
         return agent_response_call_physics()
@@ -234,7 +256,7 @@ if prompt!=None:
     with st.spinner("Thinking...  "):
         st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
     # Display assistant response in chat message container
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant",avatar=r'C:\Users\mysel\Downloads\logo_b1.png'):
             message_placeholder = st.empty()
 
             full_response = ""
@@ -253,22 +275,8 @@ if prompt!=None:
             # audio_buffer.seek(0)  
             # st.audio(data=audio_buffer, format="audio/mp3")
             message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
-            # message_placeholder.session_state.processed_output = mix_response.getvalue()
-            if 'inertia' or 'law of inertia' or 'first law of motion' or '1st law of motion' or 'newtons first law of motion' in prompt:
-
-                left_padding_ratio = 0.2
-                video_column_ratio = 0.2
-                right_padding_ratio = 0.2
-
-
-                _ , video_col, _ = st.columns([left_padding_ratio, video_column_ratio, right_padding_ratio])
-                video_file = open(r"C:\Users\mysel\Downloads\Coin in Cup_ The Law of Inertia.mp4", "rb")
-                video_bytes = video_file.read()
-                    
-                with video_col:
-                    st.video(video_bytes)
-
-
+            message_placeholder.session_state.processed_output = mix_response.getvalue()
+           
             image_extraction_regex(full_response)
             st.session_state['question']=''
             #     # Add assistant response to chat history
