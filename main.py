@@ -8,12 +8,65 @@ from io import StringIO
 from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode
 from pathlib import Path
 import random
+import psycopg2
 from interesting_facts import interesting_fun_fact,suggestions
 
 from assistent import agent_response_call_physics,agent_response_call_computer,agent_response_call_chemistry
 import os,tempfile
 output = StringIO()
 from streamlit import config
+def intro_information(subject='Physics',grade='9'):
+    col1, col2 = st.columns([1, 5])
+    col1.image(r"C:\Users\mysel\Downloads\logo_b1.png", width=500)
+    col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
+    st.divider()
+    st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
+intro_information()
+def show_chat_messages(session_data):
+    runs = session_data.get("runs", [])
+    intro_information()
+    if not runs:
+        st.info("No stored messages for this session.")
+
+    for chat in session_data['runs']:
+        st.markdown(f"🧑‍🎓 **You**: {chat['message']['content']}")
+        st.markdown(f"🤖 **Bot**: {chat['response']['content']}")
+def get_chat_history():
+    try:
+        conn = psycopg2.connect(
+            database="postgres",
+            user="postgres",
+            password="HelloWorld1!",
+            host="localhost",  # e.g., 'localhost' or an IP address
+            port="5432"    # default is 5432
+        )
+        print("Connection to PostgreSQL successful!")
+        cur = conn.cursor()
+        # cur.execute("select memory from ai.llm_default where session_id='645a431e-0aab-4f46-90bb-7d41a6f95d51'")
+        cur.execute("select session_id,memory,updated_at,created_at from ai.llm_default order by updated_at  ") 
+
+        db_version = cur.fetchall()
+        # print(db_version)
+        with st.sidebar:
+            import datetime
+            st.header("🗂️ Chat history")
+            for button in db_version:#TODO: need to use enumerate to add label of chat 1 ,chat 2 etc 
+                if button[2] is not None:
+                    dt_utc   = datetime.datetime.utcfromtimestamp(button[2])          # 2025-05-22 19:11:46
+                    dt_pk    = dt_utc + datetime.timedelta(hours=5)            # 2025-05-23 00:11:46
+                    print(dt_utc.isoformat(" ", "seconds"))
+                    print(dt_pk.isoformat(" ", "seconds"))
+                else:
+                    dt_utc   = datetime.datetime.utcfromtimestamp(button[3])          # 2025-05-22 19:11:46
+                    dt_pk    = dt_utc + datetime.timedelta(hours=5)            # 2025-05-23 00:11:46
+                    print(dt_utc.isoformat(" ", "seconds"))
+                    print(dt_pk.isoformat(" ", "seconds"))
+                st.button(label=dt_pk.isoformat(" ", "seconds"),on_click=show_chat_messages,args=(button[1],)    )
+            st.divider()
+     
+    except psycopg2.Error as e:
+        print(f"Error connecting to PostgreSQL: {e}")
+
 
 def set_theme(theme_name):
     """Set the Streamlit theme based on user selection."""
@@ -34,7 +87,6 @@ def image_extraction_regex(text:str):
         image_folder =Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\test')
         image_matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
         video_matches = re.findall(r'\b[vV]ideo\s+\d+(?:\.\d+)?\b',text)
-        print("dh djkfjkf",video_matches)
         if len(image_matches)>0:
             for image in image_matches:
                 for file in image_folder.iterdir():
@@ -157,7 +209,7 @@ grade = st.sidebar.selectbox(
 
 subject = st.sidebar.selectbox(
     "Choose Your Subject",
-    ("Physics", "Chemistry", "Computer")
+    ("Physics")
 )
 
 
@@ -179,25 +231,24 @@ theme = st.sidebar.selectbox(
     index=["light", "dark"].index(st.session_state.theme),
     key="theme_selector"
 )
-col1, col2 = st.columns([1, 5])
-col1.image(r"C:\Users\mysel\Downloads\logo_b1.png", width=500)
-col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
-st.divider()
-st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
+
 # Apply theme if it changed
 if theme != st.session_state.theme:
     st.session_state.theme = theme
     set_theme(theme)
     st.rerun()
 st.session_state,rag_assistant = initailize_session(subject)
-
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
 if st.sidebar.button(f'Start New {subject} Chat ',on_click=clear_cache):
-        if "messages" in st.session_state:
+    if "messages" in st.session_state:
             # st.session_state,rag_assistant = initailize_session(subject)
             st.session_state.messages=[]
             st.success("Cleared Chat successfully!")
+st.sidebar.divider()
+get_chat_history()
+
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": f"Ask me anything from your {subject} book!"}]
+
 # Apply theme
 if theme:
         st.session_state.theme = theme
@@ -235,7 +286,7 @@ if 'question' not in st.session_state:
 show_suggestive_prompts()
 
 # Get user input from chat_input
-user_input = st.chat_input("Enter your question")
+user_input = st.chat_input(f"Ask me anything from your {subject} book!")
 
 # Determine the prompt to use
 prompt = None
