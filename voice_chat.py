@@ -97,7 +97,7 @@ st.sidebar.title("**Learning Platform**")
 
 grade = st.sidebar.selectbox(
     "Choose Your Grade",
-    ("9th")
+    ("11th")
 )
 
 subject = st.sidebar.selectbox(
@@ -117,8 +117,8 @@ theme = st.sidebar.selectbox(
     key="theme_selector"
 )
 col1, col2 = st.columns([1, 5])
-col1.image(r"C:\Users\mysel\Downloads\logo_b1.png", width=500)
-col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
+col1.image(r"C:\Users\mysel\Downloads\Forman_Christian_College_logo.png", width=500)
+col2.title(f"FC {subject} Bot — Grade {grade}")
 st.divider()
 st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
 # Apply theme if it changed
@@ -192,7 +192,7 @@ if prompt!=None:
     with st.spinner("Thinking...  "):
         # st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
     # Display assistant response in chat message container
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant",avatar=r'C:\Users\mysel\Downloads\Forman_Christian_College_logo.png'):
             message_placeholder = st.empty()
 
             full_response = ""

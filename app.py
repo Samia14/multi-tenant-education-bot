@@ -6,5 +6,5 @@ voice_page = st.Page("voice_chat.py", title="Listen Voice Response", icon=":mate
 
 
 pg = st.navigation([chat_page, voice_page])
-st.set_page_config(page_title="Beaconhouse ChatBot", page_icon=":material/robot_2:")
+st.set_page_config(page_title="FC ChatBot", page_icon=":material/robot_2:")
 pg.run()

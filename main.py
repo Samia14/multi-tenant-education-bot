@@ -15,10 +15,10 @@ from assistent import agent_response_call_physics,agent_response_call_computer,a
 import os,tempfile
 output = StringIO()
 from streamlit import config
-def intro_information(subject='Physics',grade='9'):
+def intro_information(subject='Physics',grade='11'):
     col1, col2 = st.columns([1, 5])
-    col1.image(r"C:\Users\mysel\Downloads\logo_b1.png", width=500)
-    col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
+    col1.image(r"C:\Users\mysel\Downloads\Forman_Christian_College_logo.png", width=500)
+    col2.title(f"FC {subject} Bot — Grade {grade}")
     st.divider()
     st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
 intro_information()
@@ -137,7 +137,6 @@ def initailize_session(subject:str,grade:str=None):
     if  st.session_state.get("rag_assistant") == None:
         rag_assistent = subject_selection(subject)
         st.session_state["rag_assistant"] = rag_assistent
-        # print("-------------------",rag_assistent)
     else:
         rag_assistent = st.session_state["rag_assistant"]
     try:
@@ -204,7 +203,7 @@ st.sidebar.title("**Learning Platform**")
 
 grade = st.sidebar.selectbox(
     "Choose Your Grade",
-    ("9th")
+    ("11th")
 )
 
 subject = st.sidebar.selectbox(
@@ -307,7 +306,7 @@ if prompt!=None:
     with st.spinner("Thinking...  "):
         st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
     # Display assistant response in chat message container
-        with st.chat_message("assistant",avatar=r'C:\Users\mysel\Downloads\logo_b1.png'):
+        with st.chat_message("assistant",avatar=r'C:\Users\mysel\Downloads\Forman_Christian_College_logo.png'):
             message_placeholder = st.empty()
 
             full_response = ""
@@ -320,11 +319,7 @@ if prompt!=None:
             except Exception as E:
                 print("Error in running agent",E)
                 st.error("No Internet! Check your internet connection and try again. ")
-            # tts = gTTS(text=full_response, lang='en')  
-            # audio_buffer = BytesIO()
-            # tts.write_to_fp(audio_buffer)
-            # audio_buffer.seek(0)  
-            # st.audio(data=audio_buffer, format="audio/mp3")
+
             message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
             message_placeholder.session_state.processed_output = mix_response.getvalue()
            
