@@ -81,10 +81,10 @@ def set_theme(theme_name):
 def image_extraction_regex(text:str):
         """extract image form the code."""
         import re
-        image_str = r"C:\Users\Hadi\Desktop\multi-tenant-education-bot\test"
-        video_fodler_string =r'C:\Users\Hadi\Desktop\multi-tenant-education-bot\videos'
-        video_folder_path = Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\videos')
-        image_folder =Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\test')
+        image_str = r"\test"
+        video_fodler_string =r'\videos'
+        video_folder_path = Path('\videos')
+        image_folder =Path('\test')
         image_matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
         video_matches = re.findall(r'\b[vV]ideo\s+\d+(?:\.\d+)?\b',text)
         if len(image_matches)>0:
