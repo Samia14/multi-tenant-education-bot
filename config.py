@@ -1,7 +1,7 @@
 """File containing credentials and Secret Information."""
 import os
 
-POSTGRES_URL = "postgresql+psycopg://postgres:HelloWorld1!@localhost:5432/postgres"
+POSTGRES_URL = "postgresql+psycopg://postgres:HelloWorld1!@4.240.100.54:5432/postgres"
 OPENAI_EMBEDDING_MODEL_NAME='text-embedding-3-large'
 OPENAI_MODEL_NAME='gpt-4o-mini'
 BOOK_PATH='C:\\Education Project Data'

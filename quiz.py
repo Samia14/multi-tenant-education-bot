@@ -25,7 +25,7 @@ theme = st.sidebar.selectbox(
     key="theme_selector"
 )
 col1, col2 = st.columns([1, 5])
-col1.image(r"C:\Users\mysel\Downloads\logo_b1.png", width=500)
+col1.image(r"assets/logo_b1.png", width=500)
 col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
 st.divider()
 st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")

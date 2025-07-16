@@ -2,8 +2,13 @@ streamlit
 phidata
 pgvector
 pypdf
-psycopg[binary]
+
 openai
 sqlalchemy 
-psycopg
+
 rapidocr-onnxruntime
+gTTS==2.5.4
+pylatexenc==2.10
+psycopg2-binary==2.9.10
+psycopg[binary]
+youtube-transcript-api==1.0.3

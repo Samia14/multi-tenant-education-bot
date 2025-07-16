@@ -18,15 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 ############################
 COPY . .
 
-############################
-# 5. Expose Streamlit’s default port and
-#    tell Streamlit to listen on all interfaces
-############################
 EXPOSE 8501
 ENV STREAMLIT_SERVER_PORT=8501 \
-    STREAMLIT_SERVER_ADDRESS=0.0.0.0 \
-    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
-
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0 
 ############################
 # 6. Run the Streamlit app!
 ############################

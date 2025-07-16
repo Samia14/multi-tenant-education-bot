@@ -17,7 +17,7 @@ output = StringIO()
 from streamlit import config
 def intro_information(subject='Physics',grade='9'):
     col1, col2 = st.columns([1, 5])
-    col1.image(r"C:\Users\mysel\Downloads\logo_b1.png", width=500)
+    col1.image(r"assets/logo_b1.png", width=500)
     col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
     st.divider()
     st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
@@ -81,10 +81,10 @@ def set_theme(theme_name):
 def image_extraction_regex(text:str):
         """extract image form the code."""
         import re
-        image_str = r'C:\Users\mysel\Pictures\Screenshots\Physics\test'
-        video_fodler_string ='C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\videos'
-        video_folder_path = Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\videos')
-        image_folder =Path('C:\\Users\\mysel\\Pictures\\Screenshots\\Physics\\test')
+        image_str = r"C:\Users\Hadi\Desktop\multi-tenant-education-bot\test"
+        video_fodler_string =r'C:\Users\Hadi\Desktop\multi-tenant-education-bot\videos'
+        video_folder_path = Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\videos')
+        image_folder =Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\test')
         image_matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
         video_matches = re.findall(r'\b[vV]ideo\s+\d+(?:\.\d+)?\b',text)
         if len(image_matches)>0:
@@ -307,7 +307,7 @@ if prompt!=None:
     with st.spinner("Thinking...  "):
         st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
     # Display assistant response in chat message container
-        with st.chat_message("assistant",avatar=r'C:\Users\mysel\Downloads\logo_b1.png'):
+        with st.chat_message("assistant",avatar=r'assets/logo_b1.png'):
             message_placeholder = st.empty()
 
             full_response = ""
