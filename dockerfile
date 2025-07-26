@@ -5,6 +5,8 @@ FROM python:3.13-slim
 ############################
 
 WORKDIR /home/Educationbot
+    
+
 
 ############################
 # 3. Copy python dependencies first and install them —
@@ -17,10 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 4. Copy the rest of your application code
 ############################
 COPY . .
-
+COPY test/ ./test/ 
+COPY videos/ ./videos/ 
 EXPOSE 8501
-ENV STREAMLIT_SERVER_PORT=8501 \
-    STREAMLIT_SERVER_ADDRESS=0.0.0.0 
+ENV STREAMLIT_SERVER_PORT=8501 
 ############################
 # 6. Run the Streamlit app!
 ############################

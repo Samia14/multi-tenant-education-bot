@@ -9,7 +9,7 @@ from phi.vectordb.pgvector import PgVector
 import os
 from phi.embedder.openai import OpenAIEmbedder
 from phi.storage.agent.postgres import PgAgentStorage
-
+from sqlalchemy import create_engine
 from config import POSTGRES_URL,OPENAI_KEY,OPENAI_MODEL_NAME
 
 
@@ -104,10 +104,17 @@ def agent_response_call_physics()->Agent:
         "Provide tips for effective learning techniques, time management, and maintaining motivation.",
         "Recommend relevant communities, forums, and study groups for peer learning and networking.",
     ],
+)   
+    engine = create_engine(
+    POSTGRES_URL,
+    pool_pre_ping=True,  # optional stability feature
+    pool_size=5,
+    max_overflow=10,
+    echo=False
 )
     return Agent(
         model=OpenAIChat(id=OPENAI_MODEL_NAME,api_key=OPENAI_KEY,temperature=0.3),
-        storage=PgAgentStorage(table_name="llm_default",db_url=POSTGRES_URL),
+        storage=PgAgentStorage(table_name="llm_default",db_engine=engine),
           guidelines=['Your scope is only limited to Physics of 9th grade from your knowledge base. You have team named `Study planner`, assign the task related to planning your study to that team member. If user asked any question other than greeting,simpling apolozie.Always avoid questions that are not techncial apart from greetings. '],
         description='You are  conversational based expert in Physics for 9th grade chatbot . Your task is to answer based on user`s query. Please follow the instructions and guidelines provided to you.You have team named `Study planner`, assign the task related to planning your study to that team member.',
         team= [study_guide],

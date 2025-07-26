@@ -10,7 +10,7 @@ from pathlib import Path
 import random
 import psycopg2
 from interesting_facts import interesting_fun_fact,suggestions
-
+from pathlib import Path
 from assistent import agent_response_call_physics,agent_response_call_computer,agent_response_call_chemistry
 import os,tempfile
 output = StringIO()
@@ -77,27 +77,31 @@ def set_theme(theme_name):
     else:  # system
         config.set_option("theme.base", "auto")
 
+BASE_DIR = Path(__file__).parent          # /app
+IMAGE_DIR = BASE_DIR / "test"             # /app/test
+VIDEO_DIR = BASE_DIR / "videos"           # /app/videos
 
 def image_extraction_regex(text:str):
         """extract image form the code."""
         import re
-        image_str = r"\test"
-        video_fodler_string =r'\videos'
-        video_folder_path = Path('\videos')
-        image_folder =Path('\test')
+        # image_str = r"C:\Users\Hadi\Desktop\multi-tenant-education-bot\test"
+        # video_fodler_string =r'C:\Users\Hadi\Desktop\multi-tenant-education-bot\videos'
+        # video_folder_path = Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\videos')
+        # image_folder =Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\test')
         image_matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
         video_matches = re.findall(r'\b[vV]ideo\s+\d+(?:\.\d+)?\b',text)
         if len(image_matches)>0:
             for image in image_matches:
-                for file in image_folder.iterdir():
+                for file in IMAGE_DIR.iterdir():
                     if file.is_file() :
                        
                         if file.name.lower().replace(' ','')==image.lower().replace(' ','')+'.png':
-                            image_path = image_str+"\\"+file.name
-                            st.image(image_path)
+                            # image_path = image_str+"\\"+file.nam/e
+                            st.image(file)
+                            break
         if len(video_matches)>0:
             for video in video_matches:
-                for file in video_folder_path.iterdir():
+                for file in VIDEO_DIR.iterdir():
                     
                     if file.is_file() :
                        
@@ -109,7 +113,7 @@ def image_extraction_regex(text:str):
 
 
                             # _ , video_col, _ = st.columns([left_padding_ratio, video_column_ratio, right_padding_ratio])
-                            video_file = open(f"{video_fodler_string}\{file.name}", "rb")
+                            video_file = open(f"{file}", "rb")
                             video_bytes = video_file.read()
                                 
                             
@@ -244,7 +248,7 @@ if st.sidebar.button(f'Start New {subject} Chat ',on_click=clear_cache):
             st.session_state.messages=[]
             st.success("Cleared Chat successfully!")
 st.sidebar.divider()
-get_chat_history()
+# get_chat_history()
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": f"Ask me anything from your {subject} book!"}]
