@@ -3,6 +3,7 @@ import streamlit as st
 import random
 from phi.agent import Agent
 from gtts import gTTS
+from json_test import medical_agent
 from io import BytesIO
 from io import StringIO
 from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode
@@ -17,10 +18,10 @@ output = StringIO()
 from streamlit import config
 def intro_information(subject='Physics',grade='9'):
     col1, col2 = st.columns([1, 5])
-    col1.image(r"assets/logo_b1.png", width=500)
-    col2.title(f"Beaconhouse {subject} Bot — Grade {grade}")
+    col1.image(r"assets/logo.jpg", width=500)
+    col2.title(f"Medical Bot ")
     st.divider()
-    st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
+
 intro_information()
 def show_chat_messages(session_data):
     runs = session_data.get("runs", [])
@@ -124,18 +125,18 @@ def subject_selection(subject:str):
         return agent_response_call_computer()
     
 
-def initailize_session(subject:str,grade:str=None):
+def initailize_session(subject:str=None,grade:str=None):
     """Initialize the chat history based on the subject and grade selected."""
-    if "last_subject" in st.session_state and st.session_state["last_subject"]!=subject:
-        st.session_state.pop("rag_assistant",None)
-        st.session_state.pop("rag_assistant_agent_id",None)
-        st.session_state.pop("messages",None)
+    # if "last_subject" in st.session_state and st.session_state["last_subject"]!=subject:
+    st.session_state.pop("rag_assistant",None)
+    st.session_state.pop("rag_assistant_agent_id",None)
+    st.session_state.pop("messages",None)
     # else:
-        st.session_state["last_subject"]=subject
-        print("session state:",st.session_state)
+    # st.session_state["last_subject"]=subject
+    print("session state:",st.session_state)
     rag_assistent:Agent
     if  st.session_state.get("rag_assistant") == None:
-        rag_assistent = subject_selection(subject)
+        rag_assistent = medical_agent()
         st.session_state["rag_assistant"] = rag_assistent
         # print("-------------------",rag_assistent)
     else:
@@ -154,7 +155,7 @@ def clear_cache():
     """Clear cache based on the agent id of the session."""
     if st.session_state.get('rag_assistant'):
         del st.session_state['rag_assistant']
-    rag_assistant:Agent = subject_selection(subject)
+    rag_assistant:Agent = medical_agent()
     if st.session_state.get('rag_assistant_agent_id'):
         del st.session_state['rag_assistant_agent_id']
     st.session_state["rag_assistant"] =rag_assistant
@@ -200,17 +201,17 @@ def contains_latex(latex_text: str) -> bool:
 #     st.Page(page2, title="Second page", icon=":material/favorite:"),
 # ])
 # pg.run()    
-st.sidebar.title("**Learning Platform**")
+st.sidebar.title("**Helping Platform**")
 
-grade = st.sidebar.selectbox(
-    "Choose Your Grade",
-    ("9th")
-)
+# grade = st.sidebar.selectbox(
+#     "Choose Your Grade",
+#     ("9th")
+# )
 
-subject = st.sidebar.selectbox(
-    "Choose Your Subject",
-    ("Physics")
-)
+# subject = st.sidebar.selectbox(
+#     "Choose Your Subject",
+#     ("Physics")
+# )
 
 
 # font_size = st.sidebar.slider(
@@ -237,17 +238,17 @@ if theme != st.session_state.theme:
     st.session_state.theme = theme
     set_theme(theme)
     st.rerun()
-st.session_state,rag_assistant = initailize_session(subject)
-if st.sidebar.button(f'Start New {subject} Chat ',on_click=clear_cache):
+st.session_state,rag_assistant = initailize_session()
+if st.sidebar.button(f'Start New Chat ',on_click=clear_cache):
     if "messages" in st.session_state:
             # st.session_state,rag_assistant = initailize_session(subject)
             st.session_state.messages=[]
             st.success("Cleared Chat successfully!")
 st.sidebar.divider()
-get_chat_history()
+# get_chat_history()
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": f"Ask me anything from your {subject} book!"}]
+    st.session_state.messages = [{"role": "assistant", "content": f"Ask me anything related to the Drs information provided !"}]
 
 # Apply theme
 if theme:
@@ -283,10 +284,10 @@ if 'question' not in st.session_state:
     st.session_state['question'] = ''
 
 # Display suggestive prompts
-show_suggestive_prompts()
+# show_suggestive_prompts()
 
 # Get user input from chat_input
-user_input = st.chat_input(f"Ask me anything from your {subject} book!")
+user_input = st.chat_input(f"Ask me anything about given list of dr!")
 
 # Determine the prompt to use
 prompt = None
@@ -305,9 +306,11 @@ if prompt!=None:
      
 
     with st.spinner("Thinking...  "):
-        st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
+        # st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
+        st.warning("Please Waiting...It can take some time")
+
     # Display assistant response in chat message container
-        with st.chat_message("assistant",avatar=r'assets/logo_b1.png'):
+        with st.chat_message("assistant",avatar=r'assets/logo.jpg'):
             message_placeholder = st.empty()
 
             full_response = ""
@@ -316,7 +319,7 @@ if prompt!=None:
                 for chunk in assistant_response:
                     if chunk:
                         full_response+=chunk.content  
-                mix_response = contains_latex(full_response)
+                # mix_response = contains_latex(full_response)
             except Exception as E:
                 print("Error in running agent",E)
                 st.error("No Internet! Check your internet connection and try again. ")
@@ -325,13 +328,13 @@ if prompt!=None:
             # tts.write_to_fp(audio_buffer)
             # audio_buffer.seek(0)  
             # st.audio(data=audio_buffer, format="audio/mp3")
-            message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
-            message_placeholder.session_state.processed_output = mix_response.getvalue()
+            message_placeholder.markdown(full_response,unsafe_allow_html=True)
+            message_placeholder.session_state.processed_output = full_response
            
-            image_extraction_regex(full_response)
+            # image_extraction_regex(full_response)
             st.session_state['question']=''
             #     # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": full_response,'processed_content':mix_response.getvalue()})
+            st.session_state.messages.append({"role": "assistant", "content": full_response,'processed_content':full_response})
 
 
 
