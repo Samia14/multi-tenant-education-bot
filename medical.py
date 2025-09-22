@@ -3,6 +3,7 @@ import streamlit as st
 import random
 from phi.agent import Agent
 from gtts import gTTS
+from assistent import medical_agent
 from io import BytesIO
 from io import StringIO
 from pylatexenc.latexwalker import get_default_latex_context_db, LatexWalker, LatexCharsNode
@@ -10,7 +11,7 @@ from pathlib import Path
 import random
 import psycopg2
 from interesting_facts import interesting_fun_fact,suggestions
-from pathlib import Path
+
 from assistent import agent_response_call_physics,agent_response_call_computer,agent_response_call_chemistry
 import os,tempfile
 output = StringIO()
@@ -18,9 +19,9 @@ from streamlit import config
 def intro_information(subject='Physics',grade='9'):
     col1, col2 = st.columns([1, 5])
     col1.image(r"assets/ConvoBridgeImage_WithText.png", width=500)
-    col2.title(f" {subject} Bot — Grade {grade}")
+    col2.title(f"Medical Bot ")
     st.divider()
-    st.write(f"Aligned with BISE Lahore - Interactive Learning Assistant")
+
 intro_information()
 def show_chat_messages(session_data):
     runs = session_data.get("runs", [])
@@ -77,69 +78,23 @@ def set_theme(theme_name):
     else:  # system
         config.set_option("theme.base", "auto")
 
-BASE_DIR = Path(__file__).parent          # /app
-IMAGE_DIR = BASE_DIR / "test"             # /app/test
-VIDEO_DIR = BASE_DIR / "videos"           # /app/videos
 
-def image_extraction_regex(text:str):
-        """extract image form the code."""
-        import re
-        # image_str = r"C:\Users\Hadi\Desktop\multi-tenant-education-bot\test"
-        # video_fodler_string =r'C:\Users\Hadi\Desktop\multi-tenant-education-bot\videos'
-        # video_folder_path = Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\videos')
-        # image_folder =Path('C:\\Users\\Hadi\\Desktop\\multi-tenant-education-bot\\test')
-        image_matches = re.findall(r'\b[Ff]igure\s+\d+(?:\.\d+)?\b', text)
-        video_matches = re.findall(r'\b[vV]ideo\s+\d+(?:\.\d+)?\b',text)
-        if len(image_matches)>0:
-            for image in image_matches:
-                for file in IMAGE_DIR.iterdir():
-                    if file.is_file() :
-                       
-                        if file.name.lower().replace(' ','')==image.lower().replace(' ','')+'.png':
-                            # image_path = image_str+"\\"+file.nam/e
-                            st.image(file)
-                            break
-        if len(video_matches)>0:
-            for video in video_matches:
-                for file in VIDEO_DIR.iterdir():
-                    
-                    if file.is_file() :
-                       
-                        if file.name.lower().replace(' ','')==video.lower().replace(' ','')+'.mp4':
-                            
-                            left_padding_ratio = 0.2
-                            video_column_ratio = 0.2
-                            right_padding_ratio = 0.2
-
-
-                            # _ , video_col, _ = st.columns([left_padding_ratio, video_column_ratio, right_padding_ratio])
-                            video_file = open(f"{file}", "rb")
-                            video_bytes = video_file.read()
-                                
-                            
-                            st.video(video_bytes)
                            
-def subject_selection(subject:str):
-    if subject=='Physics':
-        return agent_response_call_physics()
-    elif subject =='Chemistry':
-        return agent_response_call_chemistry()
-    else:
-        return agent_response_call_computer()
+
     
 
-def initailize_session(subject:str,grade:str=None):
+def initailize_session(subject:str=None,grade:str=None):
     """Initialize the chat history based on the subject and grade selected."""
-    if "last_subject" in st.session_state and st.session_state["last_subject"]!=subject:
-        st.session_state.pop("rag_assistant",None)
-        st.session_state.pop("rag_assistant_agent_id",None)
-        st.session_state.pop("messages",None)
+    # if "last_subject" in st.session_state and st.session_state["last_subject"]!=subject:
+    st.session_state.pop("rag_assistant",None)
+    st.session_state.pop("rag_assistant_agent_id",None)
+    st.session_state.pop("messages",None)
     # else:
-        st.session_state["last_subject"]=subject
-        print("session state:",st.session_state)
+    # st.session_state["last_subject"]=subject
+    print("session state:",st.session_state)
     rag_assistent:Agent
     if  st.session_state.get("rag_assistant") == None:
-        rag_assistent = subject_selection(subject)
+        rag_assistent = medical_agent()
         st.session_state["rag_assistant"] = rag_assistent
         # print("-------------------",rag_assistent)
     else:
@@ -158,7 +113,7 @@ def clear_cache():
     """Clear cache based on the agent id of the session."""
     if st.session_state.get('rag_assistant'):
         del st.session_state['rag_assistant']
-    rag_assistant:Agent = subject_selection(subject)
+    rag_assistant:Agent = medical_agent()
     if st.session_state.get('rag_assistant_agent_id'):
         del st.session_state['rag_assistant_agent_id']
     st.session_state["rag_assistant"] =rag_assistant
@@ -169,61 +124,9 @@ def clear_cache():
     except Exception :
         st.warning("Could not create the Agent, please try again !")
 
-def contains_latex(latex_text: str) -> bool:
-                latex_context = get_default_latex_context_db()
-                walker = LatexWalker(latex_text, latex_context=latex_context)
-                walker = LatexWalker(latex_text, latex_context=latex_context)
-                nodes, _, _ = walker.get_latex_nodes()
+  
+st.sidebar.title("**Helping Platform**")
 
-                for node in nodes:
-                    if not isinstance(node, LatexCharsNode):
-                        latex_content = node.latex_verbatim()
-                        if latex_content.strip().startswith(r"\(") and latex_content.strip().endswith(r"\)"):
-                            # For inline math, use single $ directly (no backslashes)
-                            inner = latex_content.strip()[2:-2].strip()  # Remove \(...\) and strip spaces inside
-                            output.write(f"${inner}$") 
-                        elif latex_content.startswith(r"\[") and latex_content.endswith(r"\]"):
-                            inner = latex_content.strip()[2:-2].strip()
-                            # For display math, use double $$ with newlines
-                            output.write(f"\n$${inner}$$\n")  
-                        else:
-                            # For other LaTeX, use display math
-                            output.write(f"$${latex_content}$$")  
-                    else:
-                        # Escape any dollar signs in the text that aren't part of math
-                        
-                        text = node.latex_verbatim().replace('$', r'\$')
-                        output.write(text)
-                return output
-
-# def page2():
-#     st.title("Second page")
-
-# pg = st.navigation([
-#     st.Page("page1.py", title="First page", icon="🔥"),
-#     st.Page(page2, title="Second page", icon=":material/favorite:"),
-# ])
-# pg.run()    
-st.sidebar.title("**Learning Platform**")
-
-grade = st.sidebar.selectbox(
-    "Choose Your Grade",
-    ("9th")
-)
-
-subject = st.sidebar.selectbox(
-    "Choose Your Subject",
-    ("Physics")
-)
-
-
-# font_size = st.sidebar.slider(
-#     "Font Size", 
-#     min_value=12, 
-#     max_value=24, 
-#     value=16,
-#     key="font_size_slider"
-# )
 # Initialize session state for theme if it doesn't exist
 if "theme" not in st.session_state:
     st.session_state.theme = "light"
@@ -241,8 +144,8 @@ if theme != st.session_state.theme:
     st.session_state.theme = theme
     set_theme(theme)
     st.rerun()
-st.session_state,rag_assistant = initailize_session(subject)
-if st.sidebar.button(f'Start New {subject} Chat ',on_click=clear_cache):
+st.session_state,rag_assistant = initailize_session()
+if st.sidebar.button(f'Start New Chat ',on_click=clear_cache):
     if "messages" in st.session_state:
             # st.session_state,rag_assistant = initailize_session(subject)
             st.session_state.messages=[]
@@ -251,7 +154,7 @@ st.sidebar.divider()
 # get_chat_history()
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": f"Ask me anything from your {subject} book!"}]
+    st.session_state.messages = [{"role": "assistant", "content": f"Ask me anything related to the Drs information provided !"}]
 
 # Apply theme
 if theme:
@@ -287,10 +190,10 @@ if 'question' not in st.session_state:
     st.session_state['question'] = ''
 
 # Display suggestive prompts
-show_suggestive_prompts()
+# show_suggestive_prompts()
 
 # Get user input from chat_input
-user_input = st.chat_input(f"Ask me anything from your {subject} book!")
+user_input = st.chat_input(f"Ask me anything about given list of dr!")
 
 # Determine the prompt to use
 prompt = None
@@ -309,7 +212,9 @@ if prompt!=None:
      
 
     with st.spinner("Thinking...  "):
-        st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
+        # st.warning("💡 FUN FACT !  \n"+random.choice(interesting_fun_fact))
+        st.warning("Please Waiting...It can take some time")
+
     # Display assistant response in chat message container
         with st.chat_message("assistant",avatar=r'assets/ConvoBridgeImage_WithoutText.png'):
             message_placeholder = st.empty()
@@ -320,22 +225,18 @@ if prompt!=None:
                 for chunk in assistant_response:
                     if chunk:
                         full_response+=chunk.content  
-                mix_response = contains_latex(full_response)
+                # mix_response = contains_latex(full_response)
             except Exception as E:
                 print("Error in running agent",E)
                 st.error("No Internet! Check your internet connection and try again. ")
-            # tts = gTTS(text=full_response, lang='en')  
-            # audio_buffer = BytesIO()
-            # tts.write_to_fp(audio_buffer)
-            # audio_buffer.seek(0)  
-            # st.audio(data=audio_buffer, format="audio/mp3")
-            message_placeholder.markdown(mix_response.getvalue(),unsafe_allow_html=True)
-            message_placeholder.session_state.processed_output = mix_response.getvalue()
+
+            message_placeholder.markdown(full_response,unsafe_allow_html=True)
+            message_placeholder.session_state.processed_output = full_response
            
-            image_extraction_regex(full_response)
+            # image_extraction_regex(full_response)
             st.session_state['question']=''
             #     # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": full_response,'processed_content':mix_response.getvalue()})
+            st.session_state.messages.append({"role": "assistant", "content": full_response,'processed_content':full_response})
 
 
 
